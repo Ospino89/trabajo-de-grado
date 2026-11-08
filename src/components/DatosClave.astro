@@ -1,0 +1,54 @@
+---
+import { datosClave } from '../data/datos';
+---
+<section class="py-6" aria-labelledby="hdatos">
+  <h2 id="hdatos" class="font-serif text-3xl font-bold">Datos clave</h2>
+  <p class="mb-3 text-sm">Pasa el cursor o filtra por grupo para explorar cada gráfico.</p>
+  <div class="grid gap-4 md:grid-cols-3">
+    {datosClave.map((d) => (
+      <div class="border border-[#DDD7CA] bg-white p-4" data-grafico data-d={JSON.stringify(d)}>
+        <b class="block font-serif text-5xl text-vino">{d.cifra}</b>
+        <p>{d.texto}</p>
+        <label class="mt-2 block text-sm">Filtrar por grupo
+          <select data-filtro class="ml-1 border border-[#CFC8B8] bg-white px-1 py-0.5">
+            {Object.keys(d.series).map((k) => <option>{k}</option>)}
+          </select>
+        </label>
+        <div class="relative mt-2 h-40"><canvas role="img" aria-label={'Gráfico: ' + d.texto}></canvas></div>
+        <table class="sr-only">
+          <caption>{d.texto}</caption>
+          <thead><tr><th>Periodo</th><th>Valor</th></tr></thead>
+          <tbody>{d.etiquetas.map((e, j) => <tr><td>{e}</td><td>{d.series['Todos'][j]}</td></tr>)}</tbody>
+        </table>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js';
+  Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
+
+  document.querySelectorAll<HTMLElement>('[data-grafico]').forEach((card) => {
+    const d = JSON.parse(card.dataset.d || '{}');
+    const canvas = card.querySelector('canvas') as HTMLCanvasElement;
+    const sel = card.querySelector('[data-filtro]') as HTMLSelectElement;
+    let chart: any = null;
+    const crear = () => {
+      if (chart) return;
+      chart = new Chart(canvas, {
+        type: 'bar',
+        data: { labels: d.etiquetas, datasets: [{ label: sel.value, data: d.series[sel.value], backgroundColor: '#9A6B12', hoverBackgroundColor: '#6E1F2F' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
+      });
+    };
+    // Se dibuja solo cuando la tarjeta entra en pantalla.
+    new IntersectionObserver((es, io) => { if (es.some((e) => e.isIntersecting)) { crear(); io.disconnect(); } }).observe(card);
+    sel.addEventListener('change', () => {
+      crear();
+      chart.data.datasets[0].data = d.series[sel.value];
+      chart.data.datasets[0].label = sel.value;
+      chart.update();
+    });
+  });
+</script>

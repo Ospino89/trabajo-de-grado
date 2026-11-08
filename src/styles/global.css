@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:focus-visible { outline: 3px solid #9A6B12; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+
+/* Línea fina de rombos: el único adorno Muisca fijo del sitio */
+.linea {
+  height: 12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12'%3E%3Cpolygon points='12,1 20,6 12,11 4,6' fill='none' stroke='%239A6B12' stroke-width='1.4'/%3E%3C/svg%3E") repeat-x;
+}
+
+/* Texto largo de los capítulos */
+@layer components {
+  .prosa { @apply text-[18px] leading-8; }
+  .prosa h2 { @apply mb-2 mt-9 scroll-mt-16 font-serif text-3xl font-bold; }
+  .prosa h3 { @apply mb-1 mt-6 scroll-mt-16 font-serif text-2xl font-bold; }
+  .prosa p { @apply my-3 max-w-[68ch]; }
+  .prosa ul { @apply my-3 list-disc pl-6; }
+  .prosa a { @apply text-vino underline; }
+  .prosa table { @apply my-4 w-full border-collapse text-[15px]; }
+  .prosa th, .prosa td { @apply border border-[#DDD7CA] p-2 text-left; }
+  .prosa th { @apply bg-white; }
+  .prosa figure { @apply my-6; }
+  .prosa figcaption { @apply mt-1.5 text-sm; }
+  .prosa [data-footnotes] { @apply mt-10 border-t border-[#DDD7CA] pt-3 text-sm; }
+}
+@media print {
+  .no-print, header, footer { display: none !important; }
+  body { background: #fff; font-size: 12pt; }
+}
+
+#busqueda { --pagefind-ui-primary: #6E1F2F; --pagefind-ui-text: #2B1B1F; --pagefind-ui-background: #F7F5F0; --pagefind-ui-border: #CFC8B8; --pagefind-ui-font: 'Alegreya Sans', sans-serif; }

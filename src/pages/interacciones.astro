@@ -1,0 +1,243 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Sidebar from '../components/Sidebar.astro';
+
+const todos = (await getCollection('capitulos')).sort((a, b) => a.data.orden - b.data.orden);
+const total = todos.filter((c) => c.data.orden <= 8).length;
+const campo = 'mt-1 w-full border border-[#CFC8B8] bg-white p-2';
+const btn = 'border border-vino px-4 py-2 font-bold text-vino';
+const filtros = ['Todos', 'Estudiante', 'Docente', 'Comunidad', 'Entidad'];
+const cifras = [['visitantes', 'Visitantes'], ['hoy', 'Hoy'], ['registrados', 'Registrados'], ['comentarios', 'Comentarios']];
+const perfiles = ['Estudiante', 'Docente', 'Comunidad', 'Entidad / empresa'];
+---
+<Base titulo="Interacciones">
+  <div id="cfg" data-total={total} hidden></div>
+  <div class="grid gap-8 py-8 lg:grid-cols-[210px_minmax(0,1fr)]">
+    <aside class="hidden self-start lg:block"><Sidebar todos={todos} actual="" enInteracciones={true} /></aside>
+    <div>
+      <details class="mb-4 border border-[#DDD7CA] bg-white p-3 lg:hidden">
+        <summary class="cursor-pointer font-bold">Contenido</summary>
+        <Sidebar todos={todos} actual="" enInteracciones={true} />
+      </details>
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 class="font-serif text-4xl font-bold">Interacciones</h1>
+          <p>Personas que han entrado a ver este trabajo</p>
+        </div>
+        <button type="button" id="abrir-registro" class="bg-vino px-5 py-2.5 font-bold text-white">Registrar mi visita</button>
+      </div>
+
+      <div class="my-6 grid grid-cols-2 gap-3.5 md:grid-cols-4">
+        {cifras.map(([k, t]) => (
+          <div class="border border-[#DDD7CA] bg-white p-4"><b data-k={k} class="block font-serif text-4xl text-vino">–</b><span>{t}</span></div>
+        ))}
+      </div>
+      <p id="estado" role="status" class="mb-3 text-sm"></p>
+
+      <div class="mb-3 flex flex-wrap items-center gap-2">
+        {filtros.map((f) => <button type="button" data-f={f} aria-pressed={f === 'Todos'} class={btn + ' px-3 py-1.5 aria-pressed:bg-vino aria-pressed:text-white'}>{f}</button>)}
+        <label class="sr-only" for="buscar">Buscar persona</label>
+        <input id="buscar" type="search" placeholder="Buscar persona" class="border border-[#CFC8B8] bg-white px-2 py-1.5" />
+        <label class="sr-only" for="orden">Ordenar</label>
+        <select id="orden" class="border border-[#CFC8B8] bg-white px-2 py-1.5">
+          <option value="recientes">Recientes</option>
+          <option value="capitulos">Más capítulos leídos</option>
+        </select>
+      </div>
+
+      <div class="overflow-x-auto border border-[#DDD7CA] bg-white">
+        <table class="w-full min-w-[640px] text-left text-[15px]">
+          <caption class="sr-only">Personas que registraron su visita</caption>
+          <thead><tr class="bg-[#EFEBE1]">
+            <th scope="col" class="p-2">Persona</th><th scope="col" class="p-2">Perfil</th><th scope="col" class="p-2">Ciudad</th>
+            <th scope="col" class="p-2">Fecha</th><th scope="col" class="p-2">Capítulos leídos</th><th scope="col" class="p-2">Tiempo</th>
+          </tr></thead>
+          <tbody id="cuerpo"></tbody>
+        </table>
+        <p id="vacio" class="p-4" hidden>Aún no hay registros que coincidan.</p>
+      </div>
+      <div class="mt-3 flex items-center gap-3 text-sm">
+        <button type="button" id="ant" class={btn + ' px-3 py-1 disabled:opacity-40'}>‹ Anterior</button>
+        <span id="pag"></span>
+        <button type="button" id="sig" class={btn + ' px-3 py-1 disabled:opacity-40'}>Siguiente ›</button>
+      </div>
+
+      <div class="mt-6 grid gap-4 md:grid-cols-[2fr_1fr]">
+        <section aria-live="polite" class="border border-dashed border-vino bg-white p-4">
+          <h2 class="font-serif text-xl font-bold">Detalle</h2>
+          <p id="d-vacio">Selecciona una persona de la lista para ver su recorrido.</p>
+          <div id="d-datos" hidden>
+            <p><b id="d-alias"></b> · <span id="d-perfil"></span> · <span id="d-ciudad"></span> · <span id="d-fecha"></span></p>
+            <p class="mt-2">Recorrido por capítulos:</p>
+            <div id="d-caps" class="my-1 flex flex-wrap gap-1.5"></div>
+            <p>Valoración: <span id="d-estrellas" class="text-ocre"></span></p>
+            <p>Comentario: <span id="d-comentario"></span></p>
+          </div>
+        </section>
+        <section class="border border-[#DDD7CA] bg-[#F3E8C8] p-4 text-sm">
+          <h2 class="font-serif text-lg font-bold">Registro con consentimiento</h2>
+          <p>Cada persona decide si se deja ver. No se muestran correos ni datos de contacto.</p>
+          <p class="mt-2"><a href="/politica-de-datos" class="font-bold underline">Política de tratamiento de datos</a></p>
+          <p class="mt-1"><button type="button" id="abrir-eliminar" class="font-bold underline">Solicitar eliminación de mi registro</button></p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <dialog id="dlg-registro" class="w-full max-w-lg bg-papel p-6 backdrop:bg-black/40">
+    <form id="form-registro" class="space-y-3">
+      <h2 class="font-serif text-2xl font-bold">Registrar mi visita</h2>
+      <input type="text" name="web" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+      <label class="block">Alias o nombre<input name="alias" required minlength="2" maxlength="40" class={campo} /></label>
+      <label class="block">Perfil
+        <select name="perfil" id="f-perfil" required class={campo}>{perfiles.map((p) => <option>{p}</option>)}</select></label>
+      <label class="block">Ciudad<input name="ciudad" required minlength="2" maxlength="60" class={campo} /></label>
+      <fieldset class="flex flex-wrap items-center gap-3"><legend class="mb-1">Valoración (1 a 5)</legend>
+        {[1, 2, 3, 4, 5].map((n) => <label class="flex items-center gap-1"><input type="radio" name="valoracion" value={n} required />{n}</label>)}
+      </fieldset>
+      <label class="block">Comentario (opcional)<textarea name="comentario" maxlength="500" rows="3" class={campo}></textarea></label>
+      <label class="flex items-start gap-2"><input type="checkbox" name="consentimiento" required class="mt-1.5" />
+        <span>Acepto que mis datos se muestren en la lista de Interacciones. <a href="/politica-de-datos" class="underline">Política de tratamiento de datos</a>.</span></label>
+      <p id="msg-registro" role="status" class="text-sm"></p>
+      <div class="flex justify-end gap-2">
+        <button type="button" data-cerrar class={btn}>Cancelar</button>
+        <button type="submit" class="bg-vino px-5 py-2 font-bold text-white">Registrar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-eliminar" class="w-full max-w-lg bg-papel p-6 backdrop:bg-black/40">
+    <form id="form-eliminar" class="space-y-3">
+      <h2 class="font-serif text-2xl font-bold">Solicitar eliminación</h2>
+      <p class="text-sm">Indica el alias con el que te registraste y un correo para confirmarte. El correo no se muestra en la web.</p>
+      <label class="block">Alias registrado<input name="alias" required minlength="2" maxlength="40" class={campo} /></label>
+      <label class="block">Correo de contacto<input name="contacto" type="email" required maxlength="120" class={campo} /></label>
+      <label class="block">Detalle (opcional)<textarea name="detalle" maxlength="500" rows="2" class={campo}></textarea></label>
+      <p id="msg-eliminar" role="status" class="text-sm"></p>
+      <div class="flex justify-end gap-2">
+        <button type="button" data-cerrar class={btn}>Cancelar</button>
+        <button type="submit" class="bg-vino px-5 py-2 font-bold text-white">Enviar solicitud</button>
+      </div>
+    </form>
+  </dialog>
+</Base>
+
+<script>
+  import { supabase } from '../lib/supabase';
+
+  const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const el = (t: string, c = '', x = '') => { const e = document.createElement(t); if (c) e.className = c; if (x) e.textContent = x; return e; };
+  const COL: Record<string, string> = {
+    'Estudiante': 'bg-[#DCE9D8] text-[#1E4A2A]',
+    'Docente': 'bg-[#F3E2B3] text-[#5C3E06]',
+    'Comunidad': 'bg-[#E4D9EE] text-[#46285E]',
+    'Entidad / empresa': 'bg-[#D9E3F1] text-[#1F3A5F]',
+  };
+  const POR = 10;
+  const TOTAL = Number(document.getElementById('cfg')?.dataset.total || 8);
+  let filas: any[] = [];
+  let filtro = 'Todos', q = '', orden = 'recientes', pag = 1;
+  const fecha = (f: string) => new Date(f).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  function detalle(f: any) {
+    $('#d-vacio').hidden = true; $('#d-datos').hidden = false;
+    $('#d-alias').textContent = f.alias; $('#d-perfil').textContent = f.perfil;
+    $('#d-ciudad').textContent = f.ciudad; $('#d-fecha').textContent = fecha(f.fecha);
+    const caps = $('#d-caps'); caps.replaceChildren();
+    for (let i = 1; i <= TOTAL; i++) {
+      const leido = f.capitulos_leidos.includes(i);
+      caps.append(el('span', 'px-2 py-0.5 text-sm ' + (leido ? 'bg-vino text-white' : 'border border-[#CFC8B8]'), 'Cap. ' + i));
+    }
+    const est = $('#d-estrellas');
+    est.textContent = '★'.repeat(f.valoracion) + '☆'.repeat(5 - f.valoracion);
+    est.setAttribute('aria-label', f.valoracion + ' de 5');
+    $('#d-comentario').textContent = f.comentario || 'Sin comentario';
+  }
+
+  function pintar() {
+    const lista = filas
+      .filter((f) => (filtro === 'Todos' || f.perfil === (filtro === 'Entidad' ? 'Entidad / empresa' : filtro)) && (!q || (f.alias + ' ' + f.ciudad).toLowerCase().includes(q)))
+      .sort(orden === 'recientes' ? (a, b) => +new Date(b.fecha) - +new Date(a.fecha) : (a, b) => b.capitulos_leidos.length - a.capitulos_leidos.length);
+    const paginas = Math.max(1, Math.ceil(lista.length / POR));
+    pag = Math.min(pag, paginas);
+    const cuerpo = $('#cuerpo'); cuerpo.replaceChildren();
+    lista.slice((pag - 1) * POR, pag * POR).forEach((f) => {
+      const tr = el('tr', 'border-t border-[#DDD7CA]');
+      const t0 = el('td', 'p-2');
+      const b = el('button', 'flex items-center gap-2 text-left font-bold') as HTMLButtonElement;
+      b.type = 'button';
+      b.append(el('span', 'flex h-8 w-8 items-center justify-center rounded-full bg-[#DDD3EE] text-sm', f.alias[0].toUpperCase()), document.createTextNode(f.alias));
+      b.addEventListener('click', () => detalle(f));
+      t0.append(b);
+      const t1 = el('td', 'p-2'); t1.append(el('span', 'px-2 py-0.5 text-sm ' + (COL[f.perfil] || ''), f.perfil));
+      const n = f.capitulos_leidos.length;
+      const t4 = el('td', 'p-2'); const w = el('div', 'flex items-center gap-2');
+      const barra = el('div', 'h-2 w-24 bg-[#E4E0D6]'); const rel = el('div', 'h-2 bg-vino'); rel.style.width = (n / TOTAL) * 100 + '%'; barra.append(rel);
+      w.append(barra, el('span', 'text-sm', n + '/' + TOTAL)); t4.append(w);
+      tr.append(t0, t1, el('td', 'p-2', f.ciudad), el('td', 'p-2', fecha(f.fecha)), t4, el('td', 'p-2', f.minutos + ' min'));
+      cuerpo.append(tr);
+    });
+    $('#vacio').hidden = lista.length > 0;
+    $('#pag').textContent = `Página ${pag} de ${paginas}`;
+    $<HTMLButtonElement>('#ant').disabled = pag <= 1;
+    $<HTMLButtonElement>('#sig').disabled = pag >= paginas;
+    document.querySelectorAll<HTMLElement>('[data-f]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.f === filtro)));
+  }
+
+  async function cargar() {
+    if (!supabase) { $('#estado').textContent = 'Falta conectar la base de datos (ver README, sección Supabase).'; pintar(); return; }
+    const [res, lista] = await Promise.all([
+      supabase.rpc('resumen_interacciones'),
+      supabase.from('visitas').select('alias,perfil,ciudad,fecha,capitulos_leidos,minutos,valoracion,comentario').order('fecha', { ascending: false }).limit(500),
+    ]);
+    if (res.data) document.querySelectorAll<HTMLElement>('[data-k]').forEach((e) => (e.textContent = String((res.data as any)[e.dataset.k!] ?? 0)));
+    if (lista.error) $('#estado').textContent = 'No se pudo cargar la lista. Intenta de nuevo más tarde.';
+    else { filas = lista.data || []; $('#estado').textContent = ''; }
+    pag = 1; pintar();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-f]').forEach((b) => b.addEventListener('click', () => { filtro = b.dataset.f!; pag = 1; pintar(); }));
+  $<HTMLInputElement>('#buscar').addEventListener('input', (e) => { q = (e.target as HTMLInputElement).value.trim().toLowerCase(); pag = 1; pintar(); });
+  $<HTMLSelectElement>('#orden').addEventListener('change', (e) => { orden = (e.target as HTMLSelectElement).value; pintar(); });
+  $('#ant').addEventListener('click', () => { pag--; pintar(); });
+  $('#sig').addEventListener('click', () => { pag++; pintar(); });
+
+  const dlgR = $<HTMLDialogElement>('#dlg-registro'), dlgE = $<HTMLDialogElement>('#dlg-eliminar');
+  $('#abrir-registro').addEventListener('click', () => {
+    try { const p = localStorage.getItem('perfil'); if (p) $<HTMLSelectElement>('#f-perfil').value = p; } catch {}
+    dlgR.showModal();
+  });
+  $('#abrir-eliminar').addEventListener('click', () => dlgE.showModal());
+  document.querySelectorAll('[data-cerrar]').forEach((b) => b.addEventListener('click', () => (b.closest('dialog') as HTMLDialogElement).close()));
+
+  $<HTMLFormElement>('#form-registro').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement, fd = new FormData(form), msg = $('#msg-registro');
+    if (fd.get('web')) return;
+    if (!supabase) { msg.textContent = 'La base de datos aún no está conectada.'; return; }
+    let lect = { caps: [] as number[], seg: 0 };
+    try { lect = JSON.parse(localStorage.getItem('lectura') || '') || lect; } catch {}
+    const comentario = String(fd.get('comentario') || '').trim();
+    const { error } = await supabase.from('visitas').insert({
+      alias: String(fd.get('alias')).trim(), perfil: fd.get('perfil'), ciudad: String(fd.get('ciudad')).trim(),
+      capitulos_leidos: lect.caps, minutos: Math.min(600, Math.round(lect.seg / 60)),
+      valoracion: Number(fd.get('valoracion')), comentario: comentario || null, consentimiento: true,
+    });
+    if (error) { msg.textContent = 'No se pudo registrar. Revisa los datos e intenta de nuevo.'; return; }
+    form.reset(); msg.textContent = ''; dlgR.close(); cargar();
+  });
+
+  $<HTMLFormElement>('#form-eliminar').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement, fd = new FormData(form), msg = $('#msg-eliminar');
+    if (!supabase) { msg.textContent = 'La base de datos aún no está conectada.'; return; }
+    const { error } = await supabase.from('solicitudes_eliminacion').insert({
+      alias: String(fd.get('alias')).trim(), contacto: String(fd.get('contacto')).trim(), detalle: String(fd.get('detalle') || '').trim() || null,
+    });
+    if (error) { msg.textContent = 'No se pudo enviar la solicitud. Intenta de nuevo.'; return; }
+    form.reset(); msg.textContent = 'Solicitud enviada. Te responderemos al correo indicado.';
+  });
+
+  cargar();
+</script>

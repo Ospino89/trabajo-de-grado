@@ -1,0 +1,97 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import Cita from '../../components/Cita.astro';
+import { trabajo } from '../../data/trabajo';
+
+export async function getStaticPaths() {
+  const todos = (await getCollection('capitulos')).sort((a, b) => a.data.orden - b.data.orden);
+  return todos.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: { entry, todos, ant: todos[i - 1], sig: todos[i + 1] },
+  }));
+}
+
+const { entry, todos, ant, sig } = Astro.props;
+const { Content, headings } = await render(entry);
+const minutos = Math.max(1, Math.ceil((entry.body ?? '').split(/\s+/).length / 200));
+const fecha = entry.data.actualizado.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+const indice = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const apa = `${trabajo.autoresApa} (${trabajo.anio}). ${entry.data.titulo}. En ${trabajo.titulo} [Trabajo de grado, ${trabajo.universidad}]. ${url}`;
+const clave = 'capitulo' + entry.id.replace(/[^a-z0-9]/gi, '');
+const bib = `@misc{${clave},\n  author = {${trabajo.autoresBib}},\n  title = {${entry.data.titulo}. ${trabajo.titulo}},\n  year = {${trabajo.anio}},\n  school = {${trabajo.universidad}},\n  url = {${url}}\n}`;
+const nav = 'border border-vino px-4 py-2 font-bold text-vino';
+---
+<Base titulo={entry.data.titulo + ' · ' + trabajo.tituloCorto}>
+  <div class="no-print sticky top-0 z-50 -mx-6 h-1 bg-[#DDD7CA] md:-mx-16" aria-hidden="true">
+    <div id="progreso" class="h-1 w-0 bg-vino"></div>
+  </div>
+  <div class="grid gap-8 py-8 lg:grid-cols-[210px_minmax(0,1fr)] xl:grid-cols-[210px_minmax(0,1fr)_250px]">
+    <aside class="no-print sticky top-8 hidden self-start lg:block"><Sidebar todos={todos} actual={entry.id} /></aside>
+    <div>
+      <details class="no-print mb-4 border border-[#DDD7CA] bg-white p-3 lg:hidden">
+        <summary class="cursor-pointer font-bold">Contenido</summary>
+        <Sidebar todos={todos} actual={entry.id} />
+      </details>
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <h1 class="font-serif text-4xl font-bold">{entry.data.titulo}</h1>
+        <a href={trabajo.pdf} class={nav + ' no-print'}>Descargar PDF</a>
+      </div>
+      <p class="mt-1 text-sm">Lectura aprox. {minutos} min · Última actualización: {fecha}</p>
+      <article id="articulo" data-pagefind-body data-capitulo={entry.data.orden} class="prosa mt-4"><Content /></article>
+      <div id="fin-capitulo"></div>
+      <div class="no-print mt-10 flex justify-between gap-3">
+        {ant ? <a href={'/capitulos/' + ant.id} class={nav}>← {ant.data.titulo}</a> : <span></span>}
+        {sig ? <a href={'/capitulos/' + sig.id} class={nav + ' bg-vino text-white'}>{sig.data.titulo} →</a> : <span></span>}
+      </div>
+      <div class="no-print mt-8 xl:hidden"><Cita apa={apa} bib={bib} id="c2" /></div>
+    </div>
+    <aside class="no-print sticky top-8 hidden self-start xl:block">
+      <nav aria-label="En esta página" data-toc>
+        <p class="font-serif text-lg font-bold">En esta página</p>
+        <ul class="my-2 space-y-1 text-sm">
+          {indice.map((h) => (
+            <li class={h.depth === 3 ? 'ml-3' : ''}><a href={'#' + h.slug} class="aria-[current=true]:font-bold aria-[current=true]:text-vino">{h.text}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <Cita apa={apa} bib={bib} id="c1" />
+    </aside>
+  </div>
+</Base>
+
+<script>
+  const barra = document.getElementById('progreso');
+  const art = document.getElementById('articulo');
+  const actualizar = () => {
+    if (!barra || !art) return;
+    const r = art.getBoundingClientRect();
+    const total = r.height - window.innerHeight;
+    const p = total <= 0 ? 1 : Math.min(1, Math.max(0, -r.top / total));
+    barra.style.width = p * 100 + '%';
+  };
+  window.addEventListener('scroll', actualizar, { passive: true });
+  actualizar();
+
+  const enlaces = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc] a'));
+  const idDe = (a: HTMLAnchorElement) => decodeURIComponent(a.hash.slice(1));
+  const io = new IntersectionObserver(
+    (es) => es.forEach((e) => {
+      if (!e.isIntersecting) return;
+      enlaces.forEach((l) => l.removeAttribute('aria-current'));
+      enlaces.find((l) => idDe(l) === e.target.id)?.setAttribute('aria-current', 'true');
+    }),
+    { rootMargin: '0px 0px -70% 0px' },
+  );
+  enlaces.forEach((l) => { const h = document.getElementById(idDe(l)); if (h) io.observe(h); });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-copiar]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      const texto = document.getElementById(b.dataset.copiar!)?.textContent || '';
+      const antes = b.textContent;
+      try { await navigator.clipboard.writeText(texto); b.textContent = 'Copiado'; setTimeout(() => (b.textContent = antes), 1500); } catch {}
+    }),
+  );
+</script>

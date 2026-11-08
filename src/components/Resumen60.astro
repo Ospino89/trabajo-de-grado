@@ -1,0 +1,20 @@
+---
+import { trabajo } from '../data/trabajo';
+---
+<section class="py-8" aria-labelledby="h60">
+  <h2 id="h60" class="font-serif text-3xl font-bold">El trabajo en 60 segundos</h2>
+  <p class="mb-4 text-sm">Toca una tarjeta para ver más.</p>
+  <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-5">
+    {trabajo.resumen60.map((c, i) => (
+      <details class={'group min-h-32 border border-t-[3px] p-4 ' + (i === 3 ? 'border-vino bg-vino text-white' : 'border-[#DDD7CA] border-t-ocre bg-white')}>
+        <summary class="cursor-pointer list-none">
+          <b class="block font-serif text-lg">{i + 1} {c.p}</b>
+          <span class="mt-1.5 block">{c.t}</span>
+          <span class={'mt-2 block text-sm font-bold group-open:hidden ' + (i === 3 ? '' : 'text-vino')}>Ver más +</span>
+        </summary>
+        <p class="mt-2">{c.d}</p>
+        <a href={c.cap} class="font-bold underline">Ir al capítulo</a>
+      </details>
+    ))}
+  </div>
+</section>

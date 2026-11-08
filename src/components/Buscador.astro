@@ -1,0 +1,29 @@
+<dialog id="dlg-busqueda" class="w-full max-w-2xl bg-papel p-6 backdrop:bg-black/40">
+  <div class="mb-3 flex items-center justify-between">
+    <h2 class="font-serif text-2xl font-bold">Buscar en el documento</h2>
+    <button type="button" id="cerrar-busqueda" class="font-bold text-vino">Cerrar</button>
+  </div>
+  <div id="busqueda"></div>
+  <p id="busqueda-aviso" class="text-sm" hidden>El buscador se genera al compilar el sitio: funciona en la versión publicada o con "npm run build" y "npm run preview".</p>
+</dialog>
+
+<script>
+  const dlg = document.getElementById('dlg-busqueda') as HTMLDialogElement;
+  const aviso = document.getElementById('busqueda-aviso') as HTMLElement;
+  let listo = false;
+  document.getElementById('abrir-busqueda')?.addEventListener('click', async () => {
+    dlg.showModal();
+    if (listo) return;
+    try {
+      await new Promise((ok, fallo) => {
+        const s = document.createElement('script');
+        s.src = '/pagefind/pagefind-ui.js'; s.onload = ok; s.onerror = fallo;
+        document.head.append(s);
+      });
+      const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = '/pagefind/pagefind-ui.css'; document.head.append(css);
+      new (window as any).PagefindUI({ element: '#busqueda', showSubResults: true });
+      listo = true;
+    } catch { aviso.hidden = false; }
+  });
+  document.getElementById('cerrar-busqueda')?.addEventListener('click', () => dlg.close());
+</script>

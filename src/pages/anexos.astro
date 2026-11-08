@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+// Copia tus archivos en public/anexos/ y descríbelos aquí.
+const anexos = [
+  { titulo: '[Anexo A. Instrumento de recolección]', descripcion: '[Qué contiene]', archivo: '/anexos/instrumento.pdf', tipo: 'PDF' },
+  { titulo: '[Anexo B. Base de datos]', descripcion: '[Qué contiene]', archivo: '/anexos/datos.csv', tipo: 'CSV' },
+  { titulo: '[Anexo C. Tablas complementarias]', descripcion: '[Qué contiene]', archivo: '/anexos/tablas.xlsx', tipo: 'XLSX' },
+];
+---
+<Base titulo="Anexos">
+  <section class="py-8">
+    <h1 class="font-serif text-4xl font-bold">Anexos</h1>
+    <p class="mb-5">Instrumentos, datos y tablas descargables.</p>
+    <ul class="grid gap-3 md:grid-cols-2">
+      {anexos.map((a) => (
+        <li class="flex items-center justify-between gap-3 border border-[#DDD7CA] bg-white p-4">
+          <div><b class="font-serif text-lg">{a.titulo}</b><p class="text-[15px]">{a.descripcion}</p></div>
+          <a href={a.archivo} download class="shrink-0 border border-vino px-4 py-2 font-bold text-vino">Descargar {a.tipo}</a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>

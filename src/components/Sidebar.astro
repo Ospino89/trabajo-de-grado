@@ -1,0 +1,17 @@
+---
+const { todos, actual, enInteracciones = false } = Astro.props;
+---
+<nav aria-label="Contenido">
+  <p class="mb-2 font-serif text-lg font-bold">Contenido</p>
+  <ul class="space-y-1">
+    {todos.map((c) => (
+      <li>
+        <a href={'/capitulos/' + c.id} aria-current={c.id === actual ? 'page' : undefined}
+           class={'block px-3 py-1.5 ' + (c.id === actual ? 'bg-vino font-bold text-white' : 'hover:bg-white')}>{c.data.titulo}</a>
+      </li>
+    ))}
+  </ul>
+  <div class="linea my-3" aria-hidden="true"></div>
+  <a href="/interacciones" aria-current={enInteracciones ? 'page' : undefined}
+     class={'block px-3 py-1.5 font-bold ' + (enInteracciones ? 'bg-vino text-white' : 'text-vino hover:bg-white')}>Interacciones</a>
+</nav>

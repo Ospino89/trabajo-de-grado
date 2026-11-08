@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+const campo = 'mt-1 w-full border border-[#CFC8B8] bg-white p-2';
+---
+<Base titulo="Contacto">
+  <section class="max-w-xl py-8">
+    <h1 class="font-serif text-4xl font-bold">Contacto</h1>
+    <p class="mb-4">Escríbenos tus preguntas o comentarios sobre el trabajo.</p>
+    <form id="form-contacto" class="space-y-3">
+      <input type="text" name="web" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+      <label class="block">Nombre<input name="nombre" required minlength="2" maxlength="80" class={campo} /></label>
+      <label class="block">Correo<input name="correo" type="email" required maxlength="120" class={campo} /></label>
+      <label class="block">Mensaje<textarea name="mensaje" required minlength="5" maxlength="2000" rows="5" class={campo}></textarea></label>
+      <p class="text-sm">Usaremos tu correo solo para responderte. Más información en la <a href="/politica-de-datos" class="underline">política de tratamiento de datos</a>.</p>
+      <p id="msg-contacto" role="status" class="text-sm"></p>
+      <button type="submit" class="bg-vino px-5 py-2.5 font-bold text-white">Enviar mensaje</button>
+    </form>
+  </section>
+</Base>
+
+<script>
+  import { supabase } from '../lib/supabase';
+  const form = document.getElementById('form-contacto') as HTMLFormElement;
+  const msg = document.getElementById('msg-contacto') as HTMLElement;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    if (fd.get('web')) return;
+    if (!supabase) { msg.textContent = 'La base de datos aún no está conectada.'; return; }
+    const { error } = await supabase.from('mensajes_contacto').insert({
+      nombre: String(fd.get('nombre')).trim(), correo: String(fd.get('correo')).trim(), mensaje: String(fd.get('mensaje')).trim(),
+    });
+    if (error) { msg.textContent = 'No se pudo enviar el mensaje. Intenta de nuevo.'; return; }
+    form.reset(); msg.textContent = 'Mensaje enviado. ¡Gracias!';
+  });
+</script>

@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import { equipo } from '../data/equipo';
+---
+<Base titulo="Equipo">
+  <section class="py-8">
+    <h1 class="mb-5 font-serif text-4xl font-bold">Equipo</h1>
+    {equipo.map((g) => (
+      <div class="mb-6">
+        <h2 class="mb-2 font-serif text-2xl font-bold">{g.grupo}</h2>
+        <ul class="grid gap-3 md:grid-cols-3">
+          {g.personas.map((p) => (
+            <li class="border border-[#DDD7CA] bg-white p-4">
+              <b class="font-serif text-lg">{p.nombre}</b>
+              <p class="text-[15px]">{p.detalle}</p>
+              <a href={p.enlace} class="font-bold text-vino underline">Contacto</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+</Base>

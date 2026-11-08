@@ -1,0 +1,55 @@
+---
+import '../styles/global.css';
+import 'katex/dist/katex.min.css';
+import Sol from '../components/Sol.astro';
+import Buscador from '../components/Buscador.astro';
+import { trabajo } from '../data/trabajo';
+const { titulo = trabajo.tituloCorto, scholar = false } = Astro.props;
+const menu = [['Inicio', '/'], ['Capítulos', '/capitulos/1-problema'], ['Anexos', '/anexos'], ['Equipo', '/equipo'], ['Contacto', '/contacto']];
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titulo}</title>
+    <meta name="description" content={trabajo.frase} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={trabajo.frase} />
+    <meta property="og:url" content={new URL(Astro.url.pathname, Astro.site).href} />
+    {scholar && (<>
+      <meta name="citation_title" content={trabajo.titulo} />
+      {trabajo.autoresLista.map((a) => <meta name="citation_author" content={a} />)}
+      <meta name="citation_publication_date" content={trabajo.anio} />
+      <meta name="citation_dissertation_institution" content={trabajo.universidad} />
+      <meta name="citation_language" content="es" />
+      {trabajo.pdf !== '#' && <meta name="citation_pdf_url" content={new URL(trabajo.pdf, Astro.site).href} />}
+    </>)}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;500;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-papel text-tinta font-sans text-[17px] leading-relaxed">
+    <a href="#contenido" class="sr-only focus:not-sr-only focus:absolute focus:bg-white focus:p-2">Saltar al contenido</a>
+    <header class="mx-auto max-w-[1280px] px-6 md:px-16 pt-4">
+      <div class="flex flex-wrap items-center justify-between gap-3 pb-3">
+        <a href="/" class="flex items-center gap-3 font-serif text-xl font-bold no-underline"><Sol />{trabajo.tituloCorto}</a>
+        <nav aria-label="Principal" class="flex flex-wrap gap-x-6 gap-y-1">
+          {menu.map(([n, h]) => <a href={h} class="hover:text-vino">{n}</a>)}
+          <button type="button" id="abrir-busqueda" class="font-bold text-vino">Buscar</button>
+        </nav>
+      </div>
+      <div class="linea" aria-hidden="true"></div>
+    </header>
+    <main id="contenido" class="mx-auto max-w-[1280px] px-6 md:px-16"><slot /></main>
+    <footer class="mx-auto max-w-[1280px] px-6 md:px-16 pb-8 mt-12 text-[15px]">
+      <div class="linea mb-4" aria-hidden="true"></div>
+      © {trabajo.anio} · {trabajo.autores} · Licencia {trabajo.licencia} · DOI [enlace] · Repositorio [enlace] · <a href="/politica-de-datos" class="underline">Política de datos</a>
+    </footer>
+    <Buscador />
+    <script>import '../scripts/lectura';</script>
+  </body>
+</html>

@@ -1,0 +1,38 @@
+---
+import { trabajo } from '../data/trabajo';
+const nombres = Object.keys(trabajo.perfiles);
+---
+<section class="py-6" aria-labelledby="hperfil" data-perfil data-datos={JSON.stringify(trabajo.perfiles)}>
+  <h2 id="hperfil" class="font-serif text-3xl font-bold">Explora según tu perfil</h2>
+  <div class="my-3 flex flex-wrap gap-2.5" role="group" aria-label="Perfil">
+    {nombres.map((n, i) => (
+      <button type="button" data-nombre={n} aria-pressed={i === 0} class="border border-vino px-5 py-2.5 font-bold text-vino aria-pressed:bg-vino aria-pressed:text-white">{n}</button>
+    ))}
+  </div>
+  <div class="border border-dashed border-vino bg-white p-4" aria-live="polite">
+    <p>Capítulo recomendado: <span data-capitulo></span></p>
+    <p>Dato de interés: <span data-dato></span></p>
+    <p>Recurso: <span data-recurso></span></p>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-perfil]');
+  if (root) {
+    const datos = JSON.parse(root.dataset.datos || '{}');
+    const botones = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-nombre]'));
+    const poner = (nombre: string) => {
+      const d = datos[nombre];
+      if (!d) return;
+      root.querySelector('[data-capitulo]')!.textContent = d.capitulo;
+      root.querySelector('[data-dato]')!.textContent = d.dato;
+      root.querySelector('[data-recurso]')!.textContent = d.recurso;
+      botones.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.nombre === nombre)));
+      try { localStorage.setItem('perfil', nombre); } catch {}
+    };
+    botones.forEach((b) => b.addEventListener('click', () => poner(b.dataset.nombre!)));
+    let guardado: string | null = null;
+    try { guardado = localStorage.getItem('perfil'); } catch {}
+    poner(guardado && datos[guardado] ? guardado : botones[0].dataset.nombre!);
+  }
+</script>
