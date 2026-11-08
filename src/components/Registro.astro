@@ -1,0 +1,73 @@
+---
+// Formulario "Registrar mi visita". Se muestra al entrar al sitio (una vez por sesión)
+// y también al pulsar el botón de Interacciones.
+const campo = 'mt-1 w-full border border-[#CFC8B8] bg-white p-2';
+const btn = 'border border-vino px-4 py-2 font-bold text-vino';
+const perfiles = ['Estudiante', 'Docente', 'Comunidad', 'Entidad / empresa'];
+---
+<dialog id="dlg-registro" aria-labelledby="t-registro" class="w-full max-w-lg bg-papel p-6 backdrop:bg-black/50">
+  <form id="form-registro" class="space-y-3">
+    <h2 id="t-registro" class="font-serif text-2xl font-bold">Registrar mi visita</h2>
+    <p class="text-sm">Cuéntanos quién eres antes de explorar el trabajo. Puedes omitirlo con «Cancelar».</p>
+    <input type="text" name="web" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+    <label class="block">Nombre<input name="alias" required minlength="2" maxlength="40" class={campo} /></label>
+    <label class="block">Perfil
+      <select name="perfil" id="f-perfil" required class={campo}>{perfiles.map((p) => <option>{p}</option>)}</select></label>
+    <label class="block">Ciudad<input name="ciudad" required minlength="2" maxlength="60" class={campo} /></label>
+    <fieldset class="flex flex-wrap items-center gap-3"><legend class="mb-1">Valoración (1 a 5)</legend>
+      {[1, 2, 3, 4, 5].map((n) => <label class="flex items-center gap-1"><input type="radio" name="valoracion" value={n} required />{n}</label>)}
+    </fieldset>
+    <label class="block">Comentario (opcional)<textarea name="comentario" maxlength="500" rows="3" class={campo}></textarea></label>
+    <label class="flex items-start gap-2"><input type="checkbox" name="consentimiento" required class="mt-1.5" />
+      <span>Acepto que mis datos se muestren en la lista de Interacciones. <a href="/politica-de-datos" class="underline">Política de tratamiento de datos</a>.</span></label>
+    <p id="msg-registro" role="status" class="text-sm"></p>
+    <div class="flex justify-end gap-2">
+      <button type="button" id="cancelar-registro" class={btn}>Cancelar</button>
+      <button type="submit" class="bg-vino px-5 py-2 font-bold text-white">Registrar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  import { supabase } from '../lib/supabase';
+
+  const dlg = document.getElementById('dlg-registro') as HTMLDialogElement;
+  const form = document.getElementById('form-registro') as HTMLFormElement;
+  const msg = document.getElementById('msg-registro') as HTMLElement;
+
+  const abrir = () => {
+    try { const p = localStorage.getItem('perfil'); if (p) (document.getElementById('f-perfil') as HTMLSelectElement).value = p; } catch {}
+    if (!dlg.open) dlg.showModal();
+  };
+  document.addEventListener('abrir-registro', abrir);
+
+  // Cerrar sin registrar (Cancelar o Esc): no vuelve a salir en esta sesión.
+  const omitir = () => { try { sessionStorage.setItem('registro-omitido', '1'); } catch {} };
+  document.getElementById('cancelar-registro')!.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('close', omitir);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    if (fd.get('web')) return;
+    if (!supabase) { msg.textContent = 'La base de datos aún no está conectada.'; return; }
+    let lect = { caps: [] as number[], seg: 0 };
+    try { lect = JSON.parse(localStorage.getItem('lectura') || '') || lect; } catch {}
+    const comentario = String(fd.get('comentario') || '').trim();
+    const { error } = await supabase.from('visitas').insert({
+      alias: String(fd.get('alias')).trim(), perfil: fd.get('perfil'), ciudad: String(fd.get('ciudad')).trim(),
+      capitulos_leidos: lect.caps, minutos: Math.min(600, Math.round(lect.seg / 60)),
+      valoracion: Number(fd.get('valoracion')), comentario: comentario || null, consentimiento: true,
+    });
+    if (error) { msg.textContent = 'No se pudo registrar. Revisa los datos e intenta de nuevo.'; return; }
+    try { localStorage.setItem('visita-registrada', '1'); } catch {}
+    form.reset(); msg.textContent = '';
+    dlg.close();
+    document.dispatchEvent(new Event('visita-registrada'));
+  });
+
+  // Antes de entrar: se muestra si la persona aún no se registró ni lo omitió en esta sesión.
+  let yaPaso = false;
+  try { yaPaso = localStorage.getItem('visita-registrada') === '1' || sessionStorage.getItem('registro-omitido') === '1'; } catch {}
+  if (!yaPaso) abrir();
+</script>

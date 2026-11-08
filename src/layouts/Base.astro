@@ -3,6 +3,7 @@ import '../styles/global.css';
 import 'katex/dist/katex.min.css';
 import Sol from '../components/Sol.astro';
 import Buscador from '../components/Buscador.astro';
+import Registro from '../components/Registro.astro';
 import { trabajo } from '../data/trabajo';
 const { titulo = trabajo.tituloCorto, scholar = false } = Astro.props;
 const menu = [['Inicio', '/'], ['Capítulos', '/capitulos/1-problema'], ['Anexos', '/anexos'], ['Equipo', '/equipo'], ['Contacto', '/contacto']];
@@ -11,7 +12,9 @@ const menu = [['Inicio', '/'], ['Capítulos', '/capitulos/1-problema'], ['Anexos
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#6E1F2F" />
     <title>{titulo}</title>
     <meta name="description" content={trabajo.frase} />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
@@ -34,7 +37,8 @@ const menu = [['Inicio', '/'], ['Capítulos', '/capitulos/1-problema'], ['Anexos
   </head>
   <body class="bg-papel text-tinta font-sans text-[17px] leading-relaxed">
     <a href="#contenido" class="sr-only focus:not-sr-only focus:absolute focus:bg-white focus:p-2">Saltar al contenido</a>
-    <header class="mx-auto max-w-[1280px] px-6 md:px-16 pt-4">
+    <header class="sticky top-0 z-40 border-b border-[#DDD7CA] bg-papel pt-[env(safe-area-inset-top)]">
+      <div class="mx-auto max-w-[1280px] px-6 md:px-16 pt-3">
       <div class="flex flex-wrap items-center justify-between gap-3 pb-3">
         <a href="/" class="flex items-center gap-3 font-serif text-xl font-bold no-underline"><Sol />{trabajo.tituloCorto}</a>
         <nav aria-label="Principal" class="flex flex-wrap gap-x-6 gap-y-1">
@@ -43,6 +47,7 @@ const menu = [['Inicio', '/'], ['Capítulos', '/capitulos/1-problema'], ['Anexos
         </nav>
       </div>
       <div class="linea" aria-hidden="true"></div>
+      </div>
     </header>
     <main id="contenido" class="mx-auto max-w-[1280px] px-6 md:px-16"><slot /></main>
     <footer class="mx-auto max-w-[1280px] px-6 md:px-16 pb-8 mt-12 text-[15px]">
@@ -50,6 +55,7 @@ const menu = [['Inicio', '/'], ['Capítulos', '/capitulos/1-problema'], ['Anexos
       © {trabajo.anio} · {trabajo.autores} · Licencia {trabajo.licencia} · DOI [enlace] · Repositorio [enlace] · <a href="/politica-de-datos" class="underline">Política de datos</a>
     </footer>
     <Buscador />
+    <Registro />
     <script>import '../scripts/lectura';</script>
   </body>
 </html>

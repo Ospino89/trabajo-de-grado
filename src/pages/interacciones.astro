@@ -9,7 +9,6 @@ const campo = 'mt-1 w-full border border-[#CFC8B8] bg-white p-2';
 const btn = 'border border-vino px-4 py-2 font-bold text-vino';
 const filtros = ['Todos', 'Estudiante', 'Docente', 'Comunidad', 'Entidad'];
 const cifras = [['visitantes', 'Visitantes'], ['hoy', 'Hoy'], ['registrados', 'Registrados'], ['comentarios', 'Comentarios']];
-const perfiles = ['Estudiante', 'Docente', 'Comunidad', 'Entidad / empresa'];
 ---
 <Base titulo="Interacciones">
   <div id="cfg" data-total={total} hidden></div>
@@ -84,28 +83,6 @@ const perfiles = ['Estudiante', 'Docente', 'Comunidad', 'Entidad / empresa'];
       </div>
     </div>
   </div>
-
-  <dialog id="dlg-registro" class="w-full max-w-lg bg-papel p-6 backdrop:bg-black/40">
-    <form id="form-registro" class="space-y-3">
-      <h2 class="font-serif text-2xl font-bold">Registrar mi visita</h2>
-      <input type="text" name="web" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
-      <label class="block">Alias o nombre<input name="alias" required minlength="2" maxlength="40" class={campo} /></label>
-      <label class="block">Perfil
-        <select name="perfil" id="f-perfil" required class={campo}>{perfiles.map((p) => <option>{p}</option>)}</select></label>
-      <label class="block">Ciudad<input name="ciudad" required minlength="2" maxlength="60" class={campo} /></label>
-      <fieldset class="flex flex-wrap items-center gap-3"><legend class="mb-1">Valoración (1 a 5)</legend>
-        {[1, 2, 3, 4, 5].map((n) => <label class="flex items-center gap-1"><input type="radio" name="valoracion" value={n} required />{n}</label>)}
-      </fieldset>
-      <label class="block">Comentario (opcional)<textarea name="comentario" maxlength="500" rows="3" class={campo}></textarea></label>
-      <label class="flex items-start gap-2"><input type="checkbox" name="consentimiento" required class="mt-1.5" />
-        <span>Acepto que mis datos se muestren en la lista de Interacciones. <a href="/politica-de-datos" class="underline">Política de tratamiento de datos</a>.</span></label>
-      <p id="msg-registro" role="status" class="text-sm"></p>
-      <div class="flex justify-end gap-2">
-        <button type="button" data-cerrar class={btn}>Cancelar</button>
-        <button type="submit" class="bg-vino px-5 py-2 font-bold text-white">Registrar</button>
-      </div>
-    </form>
-  </dialog>
 
   <dialog id="dlg-eliminar" class="w-full max-w-lg bg-papel p-6 backdrop:bg-black/40">
     <form id="form-eliminar" class="space-y-3">
@@ -203,30 +180,11 @@ const perfiles = ['Estudiante', 'Docente', 'Comunidad', 'Entidad / empresa'];
   $('#ant').addEventListener('click', () => { pag--; pintar(); });
   $('#sig').addEventListener('click', () => { pag++; pintar(); });
 
-  const dlgR = $<HTMLDialogElement>('#dlg-registro'), dlgE = $<HTMLDialogElement>('#dlg-eliminar');
-  $('#abrir-registro').addEventListener('click', () => {
-    try { const p = localStorage.getItem('perfil'); if (p) $<HTMLSelectElement>('#f-perfil').value = p; } catch {}
-    dlgR.showModal();
-  });
+  const dlgE = $<HTMLDialogElement>('#dlg-eliminar');
+  $('#abrir-registro').addEventListener('click', () => document.dispatchEvent(new Event('abrir-registro')));
+  document.addEventListener('visita-registrada', () => cargar());
   $('#abrir-eliminar').addEventListener('click', () => dlgE.showModal());
   document.querySelectorAll('[data-cerrar]').forEach((b) => b.addEventListener('click', () => (b.closest('dialog') as HTMLDialogElement).close()));
-
-  $<HTMLFormElement>('#form-registro').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement, fd = new FormData(form), msg = $('#msg-registro');
-    if (fd.get('web')) return;
-    if (!supabase) { msg.textContent = 'La base de datos aún no está conectada.'; return; }
-    let lect = { caps: [] as number[], seg: 0 };
-    try { lect = JSON.parse(localStorage.getItem('lectura') || '') || lect; } catch {}
-    const comentario = String(fd.get('comentario') || '').trim();
-    const { error } = await supabase.from('visitas').insert({
-      alias: String(fd.get('alias')).trim(), perfil: fd.get('perfil'), ciudad: String(fd.get('ciudad')).trim(),
-      capitulos_leidos: lect.caps, minutos: Math.min(600, Math.round(lect.seg / 60)),
-      valoracion: Number(fd.get('valoracion')), comentario: comentario || null, consentimiento: true,
-    });
-    if (error) { msg.textContent = 'No se pudo registrar. Revisa los datos e intenta de nuevo.'; return; }
-    form.reset(); msg.textContent = ''; dlgR.close(); cargar();
-  });
 
   $<HTMLFormElement>('#form-eliminar').addEventListener('submit', async (e) => {
     e.preventDefault();
