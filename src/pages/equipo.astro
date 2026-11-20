@@ -13,7 +13,7 @@ import { equipo } from '../data/equipo';
             <li class="border border-[#DDD7CA] bg-white p-4">
               <b class="font-serif text-lg">{p.nombre}</b>
               <p class="text-[15px]">{p.detalle}</p>
-              <a href={p.enlace} class="font-bold text-vino underline">Contacto</a>
+              {p.enlace && <a href={p.enlace} class="font-bold text-vino underline">Contacto</a>}
             </li>
           ))}
         </ul>

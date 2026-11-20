@@ -1,7 +1,7 @@
 ---
 import { datosClave } from '../data/datos';
 ---
-<section class="py-6" aria-labelledby="hdatos">
+{datosClave.length > 0 && <section class="py-6" aria-labelledby="hdatos">
   <h2 id="hdatos" class="font-serif text-3xl font-bold">Datos clave</h2>
   <p class="mb-3 text-sm">Pasa el cursor o filtra por grupo para explorar cada gráfico.</p>
   <div class="grid gap-4 md:grid-cols-3">
@@ -18,12 +18,12 @@ import { datosClave } from '../data/datos';
         <table class="sr-only">
           <caption>{d.texto}</caption>
           <thead><tr><th>Periodo</th><th>Valor</th></tr></thead>
-          <tbody>{d.etiquetas.map((e, j) => <tr><td>{e}</td><td>{d.series['Todos'][j]}</td></tr>)}</tbody>
+          <tbody>{d.etiquetas.map((e, j) => <tr><td>{e}</td><td>{d.series[Object.keys(d.series)[0]][j]}</td></tr>)}</tbody>
         </table>
       </div>
     ))}
   </div>
-</section>
+</section>}
 
 <script>
   import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js';
