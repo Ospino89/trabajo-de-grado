@@ -1,6 +1,6 @@
 ---
 import { trabajo } from '../data/trabajo';
-const { imagenes = trabajo.imagenes, titulo = 'Piezas fotográficas' } = Astro.props;
+const { imagenes = trabajo.imagenes, titulo = 'Piezas fotográficas', aspecto = 'aspect-[1600/1131]' } = Astro.props;
 const imgs = imagenes;
 const flecha = 'absolute top-1/2 -mt-[22px] h-11 w-11 rounded-full bg-vino text-white text-2xl leading-none hover:bg-black';
 ---
@@ -11,7 +11,7 @@ const flecha = 'absolute top-1/2 -mt-[22px] h-11 w-11 rounded-full bg-vino text-
         {imgs.map((im, i) => (
           <figure data-slide aria-hidden={i !== 0} data-pie={[im.pie, im.credito].filter(Boolean).join(' · ')} class="m-0 w-full shrink-0">
             {im.src
-              ? <img src={im.src} alt={im.alt} class="block aspect-[1600/1131] w-full border border-[#CFC8B8] object-contain bg-white" loading={i === 0 ? 'eager' : 'lazy'} />
+              ? <img src={im.src} alt={im.alt} class={'block w-full border border-[#CFC8B8] object-contain bg-white ' + aspecto} loading={i === 0 ? 'eager' : 'lazy'} />
               : <div class="flex aspect-[1.4] items-center justify-center border border-[#CFC8B8] bg-[#E9E5DB]">[Imagen {i + 1}]</div>}
           </figure>
         ))}
