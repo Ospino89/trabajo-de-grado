@@ -1,16 +1,17 @@
 ---
 import { trabajo } from '../data/trabajo';
-const imgs = trabajo.imagenes;
+const { imagenes = trabajo.imagenes, titulo = 'Piezas fotográficas' } = Astro.props;
+const imgs = imagenes;
 const flecha = 'absolute top-1/2 -mt-[22px] h-11 w-11 rounded-full bg-vino text-white text-2xl leading-none hover:bg-black';
 ---
-<section data-carrusel aria-roledescription="carrusel" aria-label="Piezas fotográficas">
+<section data-carrusel aria-roledescription="carrusel" aria-label={titulo} tabindex="0">
   <div class="relative">
     <div class="overflow-hidden">
       <div data-pista class="flex transition-transform duration-[1200ms] ease-in-out">
         {imgs.map((im, i) => (
-          <figure data-slide aria-hidden={i !== 0} data-pie={im.pie + ' · ' + im.credito} class="m-0 w-full shrink-0">
+          <figure data-slide aria-hidden={i !== 0} data-pie={[im.pie, im.credito].filter(Boolean).join(' · ')} class="m-0 w-full shrink-0">
             {im.src
-              ? <img src={im.src} alt={im.alt} class="block aspect-[1600/1131] w-full border border-[#CFC8B8] object-cover" loading={i === 0 ? 'eager' : 'lazy'} />
+              ? <img src={im.src} alt={im.alt} class="block aspect-[1600/1131] w-full border border-[#CFC8B8] object-contain bg-white" loading={i === 0 ? 'eager' : 'lazy'} />
               : <div class="flex aspect-[1.4] items-center justify-center border border-[#CFC8B8] bg-[#E9E5DB]">[Imagen {i + 1}]</div>}
           </figure>
         ))}
@@ -19,7 +20,7 @@ const flecha = 'absolute top-1/2 -mt-[22px] h-11 w-11 rounded-full bg-vino text-
     <button type="button" data-prev aria-label="Imagen anterior" class={flecha + ' left-3'}>‹</button>
     <button type="button" data-next aria-label="Imagen siguiente" class={flecha + ' right-3'}>›</button>
   </div>
-  <p data-pie class="mt-1.5 text-sm">{imgs[0].pie} · {imgs[0].credito}</p>
+  <p data-pie class="mt-1.5 text-sm">{[imgs[0].pie, imgs[0].credito].filter(Boolean).join(' · ')}</p>
   <p class="mt-1 text-center text-sm" aria-live="polite"><span data-actual>1</span> / {imgs.length}</p>
 </section>
 

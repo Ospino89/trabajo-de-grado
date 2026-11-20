@@ -20,6 +20,16 @@ export const trabajo = {
     { src: '/imagenes/pieza-1.webp', alt: 'Pieza «Ecos de un legado Muisca»: el Monumento al Sol de Sogamoso con una estrella solar sobre una columna, la plaza y la iglesia al fondo, junto a textos sobre su origen.', pie: 'Ecos de un legado Muisca: el Monumento al Sol', credito: '[Crédito fotográfico]' },
     { src: '/imagenes/pieza-2.webp', alt: 'Pieza fotográfica con las esculturas del Monumento a la Raza y una columna del Monumento al Sol, con textos sobre su autoría y su historia.', pie: 'El Monumento a la Raza y el Monumento al Sol', credito: '[Crédito fotográfico]' },
   ],
+  catalogo: [
+    'image33.jpeg', 'image34.jpeg', 'image35.png', 'image36.png', 'image37.png',
+    'image38.png', 'image39.png', 'image40.png', 'image41.png', 'image42.png',
+    'image43.png', 'image44.jpeg', 'image45.png', 'image46.png', 'image47.jpeg',
+  ].map((archivo, i) => ({
+    src: `/imagenes/catalogo/${archivo}`,
+    alt: `Fotografía ${i + 13} del catálogo documental del Monumento al Sol de Sogamoso.`,
+    pie: `Catálogo fotográfico · fotografía ${i + 13} de 23`,
+    credito: '',
+  })),
   resumen60: [
     { p: 'Problema', t: 'El Monumento al Sol de Sogamoso evoca el legado muisca, pero muchas personas no conocen su origen ni lo que representa.', d: 'Es una representación artística moderna, no una estructura prehispánica. Si esa diferencia no se comunica con claridad, se le puede atribuir un origen y un significado que no tiene.', cap: '/capitulos/1-problema' },
     { p: 'Objetivos', t: 'Resaltar el monumento con fotografía documental para interpretar y divulgar su valor histórico, simbólico y cultural.', d: 'Documentar sus antecedentes, analizar sus características visuales, materiales y simbólicas, y producir un fotodocumental.', cap: '/capitulos/1-problema' },
