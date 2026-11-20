@@ -20,7 +20,7 @@ export const trabajo = {
     { src: '/imagenes/pieza-1.webp', alt: 'Pieza «Ecos de un legado Muisca»: el Monumento al Sol de Sogamoso con una estrella solar sobre una columna, la plaza y la iglesia al fondo, junto a textos sobre su origen.', pie: 'Ecos de un legado Muisca: el Monumento al Sol', credito: '[Crédito fotográfico]' },
     { src: '/imagenes/pieza-2.webp', alt: 'Pieza fotográfica con las esculturas del Monumento a la Raza y una columna del Monumento al Sol, con textos sobre su autoría y su historia.', pie: 'El Monumento a la Raza y el Monumento al Sol', credito: '[Crédito fotográfico]' },
   ],
-  catalogo: [8, 9, 10, 13, 14, 15, 18, 19, 20, 23, 24, 25, 26].map((pagina, i) => ({
+  catalogo: [9, 10, 11, 14, 15, 16, 19, 20, 21, 24, 25, 26, 27].map((pagina, i) => ({
     src: `/imagenes/catalogo-final/foto-${String(i + 1).padStart(2, '0')}.jpg`,
     alt: `Página ${pagina} del catálogo fotográfico final, con fotografías del Monumento al Sol de Sogamoso.`,
     pie: `Catálogo fotográfico final · página ${pagina} de 35`,
